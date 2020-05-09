@@ -8,12 +8,22 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     collectionOperations={"get"},
- *     itemOperations={"get"}
+ *     collectionOperations={
+ *          "get",
+ *          "post"
+ *     },
+ *     itemOperations={"get"},
+ *     normalizationContext={
+ *          "groups"={"comment:read"}
+ *     },
+ *     denormalizationContext={
+ *          "groups"={"comment:write"}
+ *     }
  * )
  * @ORM\Entity(repositoryClass=CommentRepository::class)
  */
@@ -23,6 +33,7 @@ class Comment
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Groups("comment:read")
      */
     private $id;
 
@@ -30,29 +41,34 @@ class Comment
      * @ORM\Column(type="text")
      * @Assert\NotBlank()
      * @Assert\Length(max="4096")
+     * @Groups({"comment:read", "comment:write"})
      */
     private $content;
 
     /**
      * @ORM\ManyToOne(targetEntity=Comment::class, inversedBy="children")
      * @ORM\JoinColumn(onDelete="CASCADE")
+     * @Groups({"comment:read", "comment:write"})
      */
     private $parent;
 
     /**
      * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="parent", orphanRemoval=true, cascade={"persist"})
+     * @Groups({"comment:read"})
      */
     private $children;
 
     /**
      * @ORM\ManyToOne(targetEntity=Product::class, inversedBy="comments")
      * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
+     * @Groups({"comment:read", "comment:write"})
      */
     private $product;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="comments")
      * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
+     * @Groups({"comment:read"})
      */
     private $user;
 

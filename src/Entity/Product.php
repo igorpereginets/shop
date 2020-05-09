@@ -9,12 +9,19 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
  *     collectionOperations={"get"},
- *     itemOperations={"get"}
+ *     itemOperations={"get"},
+ *     normalizationContext={
+ *          "groups"={"product:read"}
+ *     },
+ *     denormalizationContext={
+ *          "groups"={"product:write"}
+ *     }
  * )
  * @ORM\Entity(repositoryClass=ProductRepository::class)
  * @UniqueEntity(fields={"name"}, message="There is already a product with this name.")
@@ -25,6 +32,7 @@ class Product
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Groups("product:read")
      */
     private $id;
 
@@ -32,6 +40,7 @@ class Product
      * @ORM\Column(type="string", length=255, unique=true)
      * @Assert\NotBlank()
      * @Assert\Length(min="5", max="100")
+     * @Groups({"product:read", "product:write"})
      */
     private $name;
 
@@ -51,18 +60,21 @@ class Product
      * @ORM\Column(type="text")
      * @Assert\NotBlank()
      * @Assert\Length(min="10", max="4096")
+     * @Groups({"product:read", "product:write"})
      */
     private $description;
 
     /**
      * @ORM\Column(type="boolean")
      * @Assert\Type(type="boolean")
+     * @Groups({"product:read", "product:write"})
      */
     private $active = false;
 
     /**
      * @ORM\Column(type="integer")
      * @Assert\PositiveOrZero()
+     * @Groups({"product:read", "product:write"})
      */
     private $position = 1000;
 
@@ -70,6 +82,7 @@ class Product
      * @ORM\Column(type="float")
      * @Assert\NotBlank()
      * @Assert\PositiveOrZero()
+     * @Groups({"product:read", "product:write"})
      */
     private $price;
 
@@ -77,17 +90,21 @@ class Product
      * @ORM\Column(type="datetime", nullable=true)
      * @Assert\Type(type="\DateTimeInterface")
      * @Gedmo\Timestampable(on="change", field="active", value=true)
+     * @Groups({"product:read", "product:write"})
      */
     private $published_at;
 
     /**
      * @ORM\ManyToOne(targetEntity=Category::class, inversedBy="products")
      * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
+     * @Groups({"product:read", "product:write"})
      */
     private $category;
 
     /**
      * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="product", orphanRemoval=true, cascade={"persist"})
+     * @Groups("product:read")
+     *
      */
     private $comments;
 

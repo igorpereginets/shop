@@ -18,10 +18,10 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     collectionOperations={"post"},
  *     itemOperations={"get"},
  *     normalizationContext={
- *          "groups"={"read"}
+ *          "groups"={"user:read"}
  *     },
  *     denormalizationContext={
- *          "groups"={"write"}
+ *          "groups"={"user:write"}
  *     }
  * )
  * @ORM\Entity(repositoryClass=UserRepository::class)
@@ -34,13 +34,13 @@ class User implements UserInterface
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups("read")
+     * @Groups("user:read")
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
-     * @Groups({"read", "write"})
+     * @Groups({"user:read", "user:write"})
      * @Assert\NotBlank()
      * @Assert\Length(min="4", max="255")
      */
@@ -64,7 +64,7 @@ class User implements UserInterface
      *     pattern="/^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z]).{5,}$/",
      *     message="Password should contain at least 1 uppercase, 1 lowercase letter and 1 digit."
      * )
-     * @Groups("write")
+     * @Groups("user:write")
      */
     private $plainPassword;
 
@@ -73,13 +73,13 @@ class User implements UserInterface
      *     expression="this.getPlainPassword() === this.getRetypedPlainPassword()",
      *     message="Retyped password does not match."
      * )
-     * @Groups("write")
+     * @Groups("user:write")
      */
     private $retypedPlainPassword;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
-     * @Groups("write")
+     * @Groups("user:write")
      * @Assert\NotBlank()
      * @Assert\Email()
      */
@@ -87,7 +87,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"read", "write"})
+     * @Groups({"user:read", "user:write"})
      * @Assert\NotBlank()
      * @Assert\Length(min="4", max="255")
      */
@@ -96,19 +96,20 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="boolean")
      * @Assert\Type(type="boolean")
+     * @Groups({"user:read", "user:write"})
      */
     private $active = false;
 
     /**
      * @ORM\Column(type="date", nullable=true)
      * @Assert\Type("\DateTimeInterface")
-     * @Groups("write")
+     * @Groups("user:write")
      */
     private $birthday;
 
     /**
      * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="user", orphanRemoval=true, cascade={"persist"})
-     * @Groups("read")
+     * @Groups("user:read")
      */
     private $comments;
 
@@ -121,7 +122,6 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
-     * @Groups("read")
      */
     private $created_at;
 
