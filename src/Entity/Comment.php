@@ -13,21 +13,23 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
+ *     normalizationContext={"groups"={"comment:get"}},
  *     collectionOperations={
  *          "get",
- *          "post"
+ *          "post"={
+ *              "denormalization_context"={
+ *                  "groups"={"comment:post"}
+ *              }
+ *          }
  *     },
  *     itemOperations={
  *          "get",
  *          "put"={
- *              "access_control"="is_granted('ROLE_ADMIN') or object.getUser() == user"
+ *              "access_control"="object.getUser() == user or is_granted('ROLE_ADMIN')",
+ *              "denormalization_context"={
+ *                  "groups"={"comment:put"}
+ *              }
  *          }
- *     },
- *     normalizationContext={
- *          "groups"={"comment:read"}
- *     },
- *     denormalizationContext={
- *          "groups"={"comment:write"}
  *     }
  * )
  * @ORM\Entity(repositoryClass=CommentRepository::class)
@@ -38,7 +40,7 @@ class Comment
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups("comment:read")
+     * @Groups("comment:get")
      */
     private $id;
 
@@ -46,46 +48,49 @@ class Comment
      * @ORM\Column(type="text")
      * @Assert\NotBlank()
      * @Assert\Length(max="4096")
-     * @Groups({"comment:read", "comment:write"})
+     * @Groups({"comment:get", "comment:post", "comment:put"})
      */
     private $content;
 
     /**
      * @ORM\ManyToOne(targetEntity=Comment::class, inversedBy="children")
      * @ORM\JoinColumn(onDelete="CASCADE")
-     * @Groups({"comment:read", "comment:write"})
+     * @Groups({"comment:get", "comment:post"})
      */
     private $parent;
 
     /**
      * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="parent", orphanRemoval=true, cascade={"persist"})
-     * @Groups({"comment:read"})
+     * @Groups({"comment:get"})
      */
     private $children;
 
     /**
      * @ORM\ManyToOne(targetEntity=Product::class, inversedBy="comments")
      * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     * @Groups({"comment:read", "comment:write"})
+     * @Groups({"comment:get", "comment:post"})
      */
     private $product;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="comments")
      * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     * @Groups({"comment:read"})
+     * @Groups({"comment:get"})
      */
     private $user;
 
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable()
+     * @Assert\Type(type="\DateTimeInterface")
+     * @Groups("comment:get")
      */
     private $updated_at;
 
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
+     * @Groups("comment:get")
      */
     private $created_at;
 

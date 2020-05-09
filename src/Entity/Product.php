@@ -14,13 +14,24 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     collectionOperations={"get"},
- *     itemOperations={"get"},
- *     normalizationContext={
- *          "groups"={"product:read"}
+ *     normalizationContext={"groups"={"product:get"}},
+ *     collectionOperations={
+ *          "get",
+ *          "post"={
+ *              "access_control"="is_granted('ROLE_ADMIN')",
+ *              "denormalization_context"={
+ *                  "groups"={"product:post"}
+ *              }
+ *          }
  *     },
- *     denormalizationContext={
- *          "groups"={"product:write"}
+ *     itemOperations={
+ *          "get",
+ *          "put"={
+ *              "access_control"="is_granted('ROLE_ADMIN')",
+ *              "denormalization_context"={
+ *                  "groups"={"product:post"}
+ *              }
+ *          }
  *     }
  * )
  * @ORM\Entity(repositoryClass=ProductRepository::class)
@@ -32,7 +43,7 @@ class Product
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups("product:read")
+     * @Groups("product:get")
      */
     private $id;
 
@@ -40,7 +51,7 @@ class Product
      * @ORM\Column(type="string", length=255, unique=true)
      * @Assert\NotBlank()
      * @Assert\Length(min="5", max="100")
-     * @Groups({"product:read", "product:write"})
+     * @Groups({"product:get", "product:post"})
      */
     private $name;
 
@@ -52,7 +63,6 @@ class Product
      *          @Gedmo\SlugHandlerOption(name="separator", value="/")
      *     })
      * }, fields={"name"})
-     * @Assert\NotBlank()
      */
     private $slug;
 
@@ -60,21 +70,21 @@ class Product
      * @ORM\Column(type="text")
      * @Assert\NotBlank()
      * @Assert\Length(min="10", max="4096")
-     * @Groups({"product:read", "product:write"})
+     * @Groups({"product:get", "product:post"})
      */
     private $description;
 
     /**
      * @ORM\Column(type="boolean")
      * @Assert\Type(type="boolean")
-     * @Groups({"product:read", "product:write"})
+     * @Groups({"product:get", "product:post"})
      */
     private $active = false;
 
     /**
      * @ORM\Column(type="integer")
      * @Assert\PositiveOrZero()
-     * @Groups({"product:read", "product:write"})
+     * @Groups({"product:get", "product:post"})
      */
     private $position = 1000;
 
@@ -82,7 +92,7 @@ class Product
      * @ORM\Column(type="float")
      * @Assert\NotBlank()
      * @Assert\PositiveOrZero()
-     * @Groups({"product:read", "product:write"})
+     * @Groups({"product:get", "product:post"})
      */
     private $price;
 
@@ -90,20 +100,20 @@ class Product
      * @ORM\Column(type="datetime", nullable=true)
      * @Assert\Type(type="\DateTimeInterface")
      * @Gedmo\Timestampable(on="change", field="active", value=true)
-     * @Groups({"product:read", "product:write"})
+     * @Groups({"product:get", "product:post"})
      */
     private $published_at;
 
     /**
      * @ORM\ManyToOne(targetEntity=Category::class, inversedBy="products")
      * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     * @Groups({"product:read", "product:write"})
+     * @Groups({"product:get", "product:post"})
      */
     private $category;
 
     /**
      * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="product", orphanRemoval=true, cascade={"persist"})
-     * @Groups("product:read")
+     * @Groups("product:get")
      *
      */
     private $comments;
@@ -111,12 +121,14 @@ class Product
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable()
+     * @Groups("product:get")
      */
     private $updated_at;
 
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
+     * @Groups("product:get")
      */
     private $created_at;
 

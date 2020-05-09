@@ -15,14 +15,23 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     collectionOperations={"post"},
- *     itemOperations={"get"},
- *     normalizationContext={
- *          "groups"={"user:read"}
+ *     normalizationContext={"groups"={"user:get"}},
+ *     collectionOperations={
+ *          "post"={
+ *              "denormalization_context"={
+ *                  "groups"={"user:post"}
+ *              }
+ *          }
  *     },
- *     denormalizationContext={
- *          "groups"={"user:write"}
- *     }
+ *     itemOperations={
+ *          "get",
+ *          "put"={
+ *              "access_control"="is_granted('ROLE_ADMIN') or object == user",
+ *              "denormalization_context"={
+ *                  "groups"={"user:put"}
+ *              }
+ *          }
+ *     },
  * )
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @UniqueEntity(fields={"username"}, message="There is already a User with such username.")
@@ -34,13 +43,13 @@ class User implements UserInterface
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups("user:read")
+     * @Groups("user:get")
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
-     * @Groups({"user:read", "user:write"})
+     * @Groups({"user:get", "user:post"})
      * @Assert\NotBlank()
      * @Assert\Length(min="4", max="255")
      */
@@ -58,28 +67,29 @@ class User implements UserInterface
     private $password;
 
     /**
-     * @Assert\NotBlank()
+     * @Assert\NotBlank(groups={"user:post"})
      * @Assert\Length(min="5", max="255")
      * @Assert\Regex(
      *     pattern="/^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z]).{5,}$/",
      *     message="Password should contain at least 1 uppercase, 1 lowercase letter and 1 digit."
      * )
-     * @Groups("user:write")
+     * @Groups({"user:post", "user:put"})
      */
     private $plainPassword;
 
     /**
+     * @Assert\NotBlank(groups={"user:post"})
      * @Assert\Expression(
      *     expression="this.getPlainPassword() === this.getRetypedPlainPassword()",
      *     message="Retyped password does not match."
      * )
-     * @Groups("user:write")
+     * @Groups({"user:post", "user:put"})
      */
     private $retypedPlainPassword;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
-     * @Groups("user:write")
+     * @Groups({"user:post", "user:put"})
      * @Assert\NotBlank()
      * @Assert\Email()
      */
@@ -87,7 +97,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"user:read", "user:write"})
+     * @Groups({"user:get", "user:post", "user:put"})
      * @Assert\NotBlank()
      * @Assert\Length(min="4", max="255")
      */
@@ -96,32 +106,34 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="boolean")
      * @Assert\Type(type="boolean")
-     * @Groups({"user:read", "user:write"})
+     * @Groups({"user:get", "user:post"})
      */
     private $active = false;
 
     /**
      * @ORM\Column(type="date", nullable=true)
      * @Assert\Type("\DateTimeInterface")
-     * @Groups("user:write")
+     * @Groups({"user:post", "user:put"})
      */
     private $birthday;
 
     /**
      * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="user", orphanRemoval=true, cascade={"persist"})
-     * @Groups("user:read")
+     * @Groups("user:get")
      */
     private $comments;
 
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable()
+     * @Groups("user:get")
      */
     private $updated_at;
 
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
+     * @Groups("user:get")
      */
     private $created_at;
 
