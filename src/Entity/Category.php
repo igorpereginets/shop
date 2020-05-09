@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -13,6 +14,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  * @ORM\Entity(repositoryClass=CategoryRepository::class)
  * @UniqueEntity(fields={"name"}, message="There is already a category with this name.")
  * @UniqueEntity(fields={"slug"}, message="There is already a category with this slug.")
+ * @ApiResource()
  */
 class Category
 {
@@ -42,12 +44,12 @@ class Category
     /**
      * @ORM\Column(type="boolean")
      */
-    private $active;
+    private $active = false;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $position;
+    private $position = 1000;
 
     /**
      * @ORM\ManyToOne(targetEntity=Category::class, inversedBy="children")
