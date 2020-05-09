@@ -10,10 +10,20 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ApiResource()
+ * @ApiResource(
+ *     collectionOperations={"post"},
+ *     itemOperations={"get"},
+ *     normalizationContext={
+ *          "groups"={"read"}
+ *     },
+ *     denormalizationContext={
+ *          "groups"={"write"}
+ *     }
+ * )
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @UniqueEntity(fields={"username"}, message="There is already a User with such username.")
  * @UniqueEntity(fields={"email"}, message="There is already a User with such email.")
@@ -24,11 +34,15 @@ class User implements UserInterface
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Groups("read")
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Groups({"read", "write"})
+     * @Assert\NotBlank()
+     * @Assert\Length(min="4", max="255")
      */
     private $username;
 
@@ -44,28 +58,56 @@ class User implements UserInterface
     private $password;
 
     /**
+     * @Assert\NotBlank()
+     * @Assert\Length(min="5", max="255")
+     * @Assert\Regex(
+     *     pattern="/^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z]).{5,}$/",
+     *     message="Password should contain at least 1 uppercase, 1 lowercase letter and 1 digit."
+     * )
+     * @Groups("write")
+     */
+    private $plainPassword;
+
+    /**
+     * @Assert\Expression(
+     *     expression="this.getPlainPassword() === this.getRetypedPlainPassword()",
+     *     message="Retyped password does not match."
+     * )
+     * @Groups("write")
+     */
+    private $retypedPlainPassword;
+
+    /**
      * @ORM\Column(type="string", length=255, unique=true)
+     * @Groups("write")
+     * @Assert\NotBlank()
+     * @Assert\Email()
      */
     private $email;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"read", "write"})
+     * @Assert\NotBlank()
+     * @Assert\Length(min="4", max="255")
      */
     private $name;
 
     /**
      * @ORM\Column(type="boolean")
      */
-    private $active;
+    private $active = false;
 
     /**
      * @ORM\Column(type="date", nullable=true)
      * @Assert\Type("\DateTimeInterface")
+     * @Groups("write")
      */
     private $birthday;
 
     /**
      * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="user", orphanRemoval=true, cascade={"persist"})
+     * @Groups("read")
      */
     private $comments;
 
@@ -78,11 +120,13 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
+     * @Groups("read")
      */
     private $created_at;
 
     public function __construct()
     {
+        $this->roles = ['ROLE_USER'];
         $this->comments = new ArrayCollection();
     }
 
@@ -138,6 +182,30 @@ class User implements UserInterface
     public function setPassword(string $password): self
     {
         $this->password = $password;
+
+        return $this;
+    }
+
+    public function getPlainPassword(): ?string
+    {
+        return $this->plainPassword;
+    }
+
+    public function setPlainPassword(?string $plainPassword): self
+    {
+        $this->plainPassword = $plainPassword;
+
+        return $this;
+    }
+
+    public function getRetypedPlainPassword(): ?string
+    {
+        return $this->retypedPlainPassword;
+    }
+
+    public function setRetypedPlainPassword(?string $retypedPlainPassword): self
+    {
+        $this->retypedPlainPassword = $retypedPlainPassword;
 
         return $this;
     }

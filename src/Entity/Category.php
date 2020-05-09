@@ -11,10 +11,13 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
+ * @ApiResource(
+ *     collectionOperations={"get"},
+ *     itemOperations={"get"}
+ * )
  * @ORM\Entity(repositoryClass=CategoryRepository::class)
  * @UniqueEntity(fields={"name"}, message="There is already a category with this name.")
  * @UniqueEntity(fields={"slug"}, message="There is already a category with this slug.")
- * @ApiResource()
  */
 class Category
 {
