@@ -34,6 +34,8 @@ class ProductFixtures extends Fixture implements DependentFixtureInterface
                 ->setPublishedAt($product->isActive() ? $this->faker->dateTimeThisYear : null)
                 ->setCategory($this->getReference('category_' . random_int(0, 99)));
 
+            $this->setReference('product_' . $i, $product);
+
             $manager->persist($product);
         }
 

@@ -72,8 +72,10 @@ class UserFixtures extends Fixture
                 ->setBirthday($this->faker->dateTimeThisCentury)
                 ->setRoles(['ROLE_USER']);
 
+            $this->setReference('user_' . $i, $user);
             $manager->persist($user);
         }
+
 
         $manager->flush();
     }
