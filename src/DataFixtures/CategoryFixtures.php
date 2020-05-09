@@ -37,6 +37,8 @@ class CategoryFixtures extends Fixture
                 $parents[] = $category;
             }
 
+            $this->setReference('category_' . $i, $category);
+
             $manager->persist($category);
         }
 
