@@ -95,6 +95,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="boolean")
+     * @Assert\Type(type="boolean")
      */
     private $active = false;
 

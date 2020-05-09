@@ -30,6 +30,8 @@ class Product
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
+     * @Assert\NotBlank()
+     * @Assert\Length(min="5", max="100")
      */
     private $name;
 
@@ -41,26 +43,33 @@ class Product
      *          @Gedmo\SlugHandlerOption(name="separator", value="/")
      *     })
      * }, fields={"name"})
+     * @Assert\NotBlank()
      */
     private $slug;
 
     /**
      * @ORM\Column(type="text")
+     * @Assert\NotBlank()
+     * @Assert\Length(min="10", max="4096")
      */
     private $description;
 
     /**
      * @ORM\Column(type="boolean")
+     * @Assert\Type(type="boolean")
      */
     private $active = false;
 
     /**
      * @ORM\Column(type="integer")
+     * @Assert\PositiveOrZero()
      */
     private $position = 1000;
 
     /**
      * @ORM\Column(type="float")
+     * @Assert\NotBlank()
+     * @Assert\PositiveOrZero()
      */
     private $price;
 

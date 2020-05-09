@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
@@ -30,6 +31,8 @@ class Category
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank()
+     * @Assert\Length(max="120", min="5")
      */
     private $name;
 
@@ -41,16 +44,19 @@ class Category
      *          @Gedmo\SlugHandlerOption(name="separator", value="/")
      *      })
      * }, fields={"name"})
+     * @Assert\NotBlank()
      */
     private $slug;
 
     /**
      * @ORM\Column(type="boolean")
+     * @Assert\Type(type="boolean")
      */
     private $active = false;
 
     /**
      * @ORM\Column(type="integer")
+     * @Assert\PositiveOrZero()
      */
     private $position = 1000;
 
