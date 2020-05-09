@@ -15,7 +15,7 @@ class UserFixtures extends Fixture
             'name' => 'Admin',
             'email' => 'admin@admin.com',
             'username' => 'admin',
-            'password' => '123pass',
+            'password' => '123Pass',
             'is_active' => true,
             'roles' => ['ROLE_ADMIN']
         ],
@@ -23,7 +23,7 @@ class UserFixtures extends Fixture
             'name' => 'SuperAdmin',
             'email' => 'superadmin@admin.com',
             'username' => 'superadmin',
-            'password' => '123pass',
+            'password' => '123Pass',
             'is_active' => true,
             'roles' => ['ROLE_SUPERADMIN']
         ],

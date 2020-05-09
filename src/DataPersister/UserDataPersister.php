@@ -28,7 +28,7 @@ class UserDataPersister implements ContextAwareDataPersisterInterface
 
     public function supports($data, array $context = []): bool
     {
-        return $data instanceof User;
+        return $this->decorated->supports($data);
     }
 
     public function persist($data, array $context = [])

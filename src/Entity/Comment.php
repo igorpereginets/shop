@@ -180,4 +180,9 @@ class Comment
 
         return $this;
     }
+
+    public function __toString()
+    {
+        return substr($this->content, 0, 15);
+    }
 }

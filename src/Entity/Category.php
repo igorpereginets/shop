@@ -9,12 +9,24 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     collectionOperations={"get"},
- *     itemOperations={"get"}
+ *     collectionOperations={
+ *          "get",
+ *          "post"={
+ *              "access_control"="is_granted('ROLE_SUPERADMIN')"
+ *          }
+ *     },
+ *     itemOperations={"get"},
+ *     normalizationContext={
+ *          "groups"={"read"}
+ *     },
+ *     denormalizationContext={
+ *          "groups"={"write"}
+ *     }
  * )
  * @ORM\Entity(repositoryClass=CategoryRepository::class)
  * @UniqueEntity(fields={"name"}, message="There is already a category with this name.")
@@ -26,6 +38,7 @@ class Category
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Groups("read")
      */
     private $id;
 
@@ -33,6 +46,7 @@ class Category
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank()
      * @Assert\Length(max="120", min="5")
+     * @Groups({"read", "write"})
      */
     private $name;
 
@@ -44,25 +58,28 @@ class Category
      *          @Gedmo\SlugHandlerOption(name="separator", value="/")
      *      })
      * }, fields={"name"})
-     * @Assert\NotBlank()
+     * @Groups("read")
      */
     private $slug;
 
     /**
      * @ORM\Column(type="boolean")
      * @Assert\Type(type="boolean")
+     * @Groups({"read", "write"})
      */
     private $active = false;
 
     /**
      * @ORM\Column(type="integer")
      * @Assert\PositiveOrZero()
+     * @Groups({"read", "write"})
      */
     private $position = 1000;
 
     /**
      * @ORM\ManyToOne(targetEntity=Category::class, inversedBy="children")
      * @ORM\JoinColumn(onDelete="SET NULL")
+     * @Groups({"read", "write"})
      */
     private $parent;
 
@@ -74,12 +91,14 @@ class Category
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable()
+     * @Groups("read")
      */
     private $updated_at;
 
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
+     * @Groups("read")
      */
     private $created_at;
 
@@ -243,5 +262,10 @@ class Category
         }
 
         return $this;
+    }
+
+    public function __toString()
+    {
+        return $this->name;
     }
 }
