@@ -17,7 +17,12 @@ use Symfony\Component\Validator\Constraints as Assert;
  *          "get",
  *          "post"
  *     },
- *     itemOperations={"get"},
+ *     itemOperations={
+ *          "get",
+ *          "put"={
+ *              "access_control"="is_granted('ROLE_ADMIN') or object.getUser() == user"
+ *          }
+ *     },
  *     normalizationContext={
  *          "groups"={"comment:read"}
  *     },
