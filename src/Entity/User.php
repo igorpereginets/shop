@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -12,6 +13,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
+ * @ApiResource()
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @UniqueEntity(fields={"username"}, message="There is already a User with such username.")
  * @UniqueEntity(fields={"email"}, message="There is already a User with such email.")
@@ -63,6 +65,11 @@ class User implements UserInterface
     private $birthday;
 
     /**
+     * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="user", orphanRemoval=true, cascade={"persist"})
+     */
+    private $comments;
+
+    /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable()
      */
@@ -73,11 +80,6 @@ class User implements UserInterface
      * @Gedmo\Timestampable(on="create")
      */
     private $created_at;
-
-    /**
-     * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="user", orphanRemoval=true)
-     */
-    private $comments;
 
     public function __construct()
     {

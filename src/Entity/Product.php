@@ -70,9 +70,14 @@ class Product
 
     /**
      * @ORM\ManyToOne(targetEntity=Category::class, inversedBy="products")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $category;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="product", orphanRemoval=true, cascade={"persist"})
+     */
+    private $comments;
 
     /**
      * @ORM\Column(type="datetime")
@@ -85,11 +90,6 @@ class Product
      * @Gedmo\Timestampable(on="create")
      */
     private $created_at;
-
-    /**
-     * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="product", orphanRemoval=true)
-     */
-    private $comments;
 
     public function __construct()
     {

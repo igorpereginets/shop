@@ -39,14 +39,14 @@ class Comment
     private $children;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Product::class, inversedBy="comments", cascade={"persist"})
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\ManyToOne(targetEntity=Product::class, inversedBy="comments")
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $product;
 
     /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="comments", cascade={"persist"})
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="comments")
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $user;
 

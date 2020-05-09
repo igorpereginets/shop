@@ -58,7 +58,7 @@ class Category
     private $parent;
 
     /**
-     * @ORM\OneToMany(targetEntity=Category::class, mappedBy="parent")
+     * @ORM\OneToMany(targetEntity=Category::class, mappedBy="parent", cascade={"persist"})
      */
     private $children;
 
@@ -75,7 +75,7 @@ class Category
     private $created_at;
 
     /**
-     * @ORM\OneToMany(targetEntity=Product::class, mappedBy="category")
+     * @ORM\OneToMany(targetEntity=Product::class, mappedBy="category", orphanRemoval=true, cascade={"persist"})
      */
     private $products;
 
