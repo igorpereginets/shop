@@ -26,7 +26,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     itemOperations={
  *          "get",
  *          "put"={
- *              "access_control"="is_granted('ROLE_ADMIN') or object == user",
+ *              "security"="is_granted('ROLE_ADMIN') or object == user",
  *              "denormalization_context"={
  *                  "groups"={"user:put"}
  *              }
@@ -57,6 +57,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="json")
+     * @Groups("admin:get")
      */
     private $roles = [];
 
@@ -89,7 +90,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
-     * @Groups({"user:post", "user:put"})
+     * @Groups({"user:post", "user:put", "admin:get", "user:owner:get"})
      * @Assert\NotBlank()
      * @Assert\Email()
      */
@@ -106,20 +107,20 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="boolean")
      * @Assert\Type(type="boolean")
-     * @Groups({"user:get", "user:post", "product:comments:get"})
+     * @Groups({"admin:get", "user:owner:get"})
      */
     private $active = false;
 
     /**
      * @ORM\Column(type="date", nullable=true)
      * @Assert\Type("\DateTimeInterface")
-     * @Groups({"user:post", "user:put", "user:get"})
+     * @Groups({"user:post", "user:put", "user:owner:get"})
      */
     private $birthday;
 
     /**
      * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="user", orphanRemoval=true, cascade={"persist"})
-     * @Groups("user:get")
+     * @Groups("user:owner:get")
      */
     private $comments;
 
