@@ -43,13 +43,13 @@ class User implements UserInterface
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups("user:get")
+     * @Groups({"user:get", "product:comments:get"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
-     * @Groups({"user:get", "user:post"})
+     * @Groups({"user:get", "user:post", "product:comments:get"})
      * @Assert\NotBlank()
      * @Assert\Length(min="4", max="255")
      */
@@ -97,7 +97,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"user:get", "user:post", "user:put"})
+     * @Groups({"user:get", "user:post", "user:put", "product:comments:get"})
      * @Assert\NotBlank()
      * @Assert\Length(min="4", max="255")
      */
@@ -106,14 +106,14 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="boolean")
      * @Assert\Type(type="boolean")
-     * @Groups({"user:get", "user:post"})
+     * @Groups({"user:get", "user:post", "product:comments:get"})
      */
     private $active = false;
 
     /**
      * @ORM\Column(type="date", nullable=true)
      * @Assert\Type("\DateTimeInterface")
-     * @Groups({"user:post", "user:put"})
+     * @Groups({"user:post", "user:put", "user:get"})
      */
     private $birthday;
 
@@ -126,14 +126,14 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable()
-     * @Groups("user:get")
+     * @Groups({"user:get", "product:comments:get"})
      */
     private $updated_at;
 
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
-     * @Groups("user:get")
+     * @Groups({"user:get", "product:comments:get"})
      */
     private $created_at;
 

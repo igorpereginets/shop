@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use App\Repository\ProductRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -32,6 +33,13 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                  "groups"={"product:post"}
  *              }
  *          }
+ *     },
+ *     subresourceOperations={
+ *          "api_categories_products_get_subresource"={
+ *              "normalization_context"={
+ *                  "groups"={"category:products:get"}
+ *              }
+ *          }
  *     }
  * )
  * @ORM\Entity(repositoryClass=ProductRepository::class)
@@ -43,7 +51,7 @@ class Product
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups("product:get")
+     * @Groups({"product:get", "category:products:get"})
      */
     private $id;
 
@@ -51,7 +59,7 @@ class Product
      * @ORM\Column(type="string", length=255, unique=true)
      * @Assert\NotBlank()
      * @Assert\Length(min="5", max="100")
-     * @Groups({"product:get", "product:post"})
+     * @Groups({"product:get", "product:post", "category:products:get"})
      */
     private $name;
 
@@ -63,6 +71,7 @@ class Product
      *          @Gedmo\SlugHandlerOption(name="separator", value="/")
      *     })
      * }, fields={"name"})
+     * @Groups({"product:get", "category:products:get"})
      */
     private $slug;
 
@@ -70,21 +79,21 @@ class Product
      * @ORM\Column(type="text")
      * @Assert\NotBlank()
      * @Assert\Length(min="10", max="4096")
-     * @Groups({"product:get", "product:post"})
+     * @Groups({"product:get", "product:post", "category:products:get"})
      */
     private $description;
 
     /**
      * @ORM\Column(type="boolean")
      * @Assert\Type(type="boolean")
-     * @Groups({"product:get", "product:post"})
+     * @Groups({"product:get", "product:post", "category:products:get"})
      */
     private $active = false;
 
     /**
      * @ORM\Column(type="integer")
      * @Assert\PositiveOrZero()
-     * @Groups({"product:get", "product:post"})
+     * @Groups({"product:get", "product:post", "category:products:get"})
      */
     private $position = 1000;
 
@@ -92,7 +101,7 @@ class Product
      * @ORM\Column(type="float")
      * @Assert\NotBlank()
      * @Assert\PositiveOrZero()
-     * @Groups({"product:get", "product:post"})
+     * @Groups({"product:get", "product:post", "category:products:get"})
      */
     private $price;
 
@@ -100,7 +109,7 @@ class Product
      * @ORM\Column(type="datetime", nullable=true)
      * @Assert\Type(type="\DateTimeInterface")
      * @Gedmo\Timestampable(on="change", field="active", value=true)
-     * @Groups({"product:get", "product:post"})
+     * @Groups({"product:get", "product:post", "category:products:get"})
      */
     private $published_at;
 
@@ -114,21 +123,21 @@ class Product
     /**
      * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="product", orphanRemoval=true, cascade={"persist"})
      * @Groups("product:get")
-     *
+     * @ApiSubresource()
      */
     private $comments;
 
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable()
-     * @Groups("product:get")
+     * @Groups({"product:get", "category:products:get"})
      */
     private $updated_at;
 
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
-     * @Groups("product:get")
+     * @Groups({"product:get", "category:products:get"})
      */
     private $created_at;
 

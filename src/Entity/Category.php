@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -95,6 +96,12 @@ class Category
     private $children;
 
     /**
+     * @ORM\OneToMany(targetEntity=Product::class, mappedBy="category", orphanRemoval=true, cascade={"persist"})
+     * @ApiSubresource(maxDepth=1)
+     */
+    private $products;
+
+    /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable()
      * @Groups("category:get")
@@ -107,11 +114,6 @@ class Category
      * @Groups("category:get")
      */
     private $created_at;
-
-    /**
-     * @ORM\OneToMany(targetEntity=Product::class, mappedBy="category", orphanRemoval=true, cascade={"persist"})
-     */
-    private $products;
 
     public function __construct()
     {

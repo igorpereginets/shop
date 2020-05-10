@@ -30,6 +30,13 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                  "groups"={"comment:put"}
  *              }
  *          }
+ *     },
+ *     subresourceOperations={
+ *          "api_products_comments_get_subresource"={
+ *              "normalization_context"={
+ *                  "groups"={"product:comments:get"}
+ *              }
+ *          }
  *     }
  * )
  * @ORM\Entity(repositoryClass=CommentRepository::class)
@@ -48,7 +55,7 @@ class Comment
      * @ORM\Column(type="text")
      * @Assert\NotBlank()
      * @Assert\Length(max="4096")
-     * @Groups({"comment:get", "comment:post", "comment:put"})
+     * @Groups({"comment:get", "comment:post", "comment:put", "product:comments:get"})
      */
     private $content;
 
@@ -61,7 +68,7 @@ class Comment
 
     /**
      * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="parent", orphanRemoval=true, cascade={"persist"})
-     * @Groups({"comment:get"})
+     * @Groups({"comment:get", "product:comments:get"})
      */
     private $children;
 
@@ -75,7 +82,7 @@ class Comment
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="comments")
      * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     * @Groups({"comment:get"})
+     * @Groups({"comment:get", "product:comments:get"})
      */
     private $user;
 
@@ -83,14 +90,14 @@ class Comment
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable()
      * @Assert\Type(type="\DateTimeInterface")
-     * @Groups("comment:get")
+     * @Groups({"comment:get"})
      */
     private $updated_at;
 
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
-     * @Groups("comment:get")
+     * @Groups({"comment:get", "product:comments:get"})
      */
     private $created_at;
 
