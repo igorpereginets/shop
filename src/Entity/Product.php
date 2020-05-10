@@ -106,12 +106,12 @@ class Product
     private $price;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
+     * @ORM\Column(type="datetime", nullable=true, name="published_at")
      * @Assert\Type(type="\DateTimeInterface")
      * @Gedmo\Timestampable(on="change", field="active", value=true)
      * @Groups({"product:get", "product:post", "category:products:get"})
      */
-    private $published_at;
+    private $publishedAt;
 
     /**
      * @ORM\ManyToOne(targetEntity=Category::class, inversedBy="products")
@@ -128,18 +128,18 @@ class Product
     private $comments;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", name="updated_at")
      * @Gedmo\Timestampable()
      * @Groups({"product:get", "category:products:get"})
      */
-    private $updated_at;
+    private $updatedAt;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", name="created_at")
      * @Gedmo\Timestampable(on="create")
      * @Groups({"product:get", "category:products:get"})
      */
-    private $created_at;
+    private $createdAt;
 
     public function __construct()
     {
@@ -225,12 +225,12 @@ class Product
 
     public function getPublishedAt(): ?\DateTimeInterface
     {
-        return $this->published_at;
+        return $this->publishedAt;
     }
 
-    public function setPublishedAt(?\DateTimeInterface $published_at): self
+    public function setPublishedAt(?\DateTimeInterface $publishedAt): self
     {
-        $this->published_at = $published_at;
+        $this->publishedAt = $publishedAt;
 
         return $this;
     }
@@ -249,24 +249,24 @@ class Product
 
     public function getUpdatedAt(): ?\DateTimeInterface
     {
-        return $this->updated_at;
+        return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeInterface $updated_at): self
+    public function setUpdatedAt(\DateTimeInterface $updatedAt): self
     {
-        $this->updated_at = $updated_at;
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }
 
     public function getCreatedAt(): ?\DateTimeInterface
     {
-        return $this->created_at;
+        return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $created_at): self
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
     {
-        $this->created_at = $created_at;
+        $this->createdAt = $createdAt;
 
         return $this;
     }
