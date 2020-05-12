@@ -35,5 +35,3 @@ services:
         arguments: ['@security.token_storage']
         tags:
             - { name: 'serializer.normalizer', priority: 64 }
-
-    App\DataProvider\ResetPasswordDataProvider: ~
