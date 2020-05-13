@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\CommentRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -10,9 +11,16 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 
 /**
+ * @ApiFilter(PropertyFilter::class, arguments={
+ *      "parameterName"="properties",
+ *      "overrideDefaultProperties"=false,
+ *      "whitelist"={"id", "parent", "product", "user", "content"}
+ * })
  * @ApiResource(
+ *     attributes={"order"={"createdAt": "DESC"}},
  *     normalizationContext={"groups"={"comment:get"}},
  *     collectionOperations={
  *          "get",

@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use App\Repository\ProductRepository;
@@ -12,9 +13,27 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 
 /**
+ * @ApiFilter(SearchFilter::class, properties={
+ *     "name": "partial",
+ *     "description": "partial"
+ * })
+ * @ApiFilter(RangeFilter::class, properties={"price"})
+ * @ApiFilter(DateFilter::class, properties={"publishedAt": DateFilter::EXCLUDE_NULL})
+ * @ApiFilter(OrderFilter::class, properties={"name", "price", "publishedAt"})
+ * @ApiFilter(PropertyFilter::class, arguments={
+ *      "parameterName"="properties",
+ *      "overrideDefaultProperties"=false,
+ *      "whitelist"={"id", "category", "name", "description", "slug", "position", "price", "publishedAt"}
+ * })
  * @ApiResource(
+ *     attributes={"order"={"position": "DESC", "publishedAt": "DESC"}},
  *     normalizationContext={"groups"={"product:get"}},
  *     collectionOperations={
  *          "get",

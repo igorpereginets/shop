@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use App\Repository\CategoryRepository;
@@ -12,9 +13,18 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 
 /**
+ * @ApiFilter(PropertyFilter::class, arguments={
+ *      "parameterName"="properties",
+ *      "overrideDefaultProperties"=false,
+ *      "whitelist"={"id", "parent", "name", "slug", "position"}
+ * })
+ * @ApiFilter(SearchFilter::class, properties={"name": "partial"})
  * @ApiResource(
+ *     attributes={"order"={"position": "DESC", "createdAt": "DESC"}},
  *     normalizationContext={"groups"={"category:get"}},
  *     collectionOperations={
  *          "get",
