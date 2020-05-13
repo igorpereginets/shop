@@ -5,6 +5,7 @@ namespace App\Helper;
 use App\Entity\ResetPasswordRequest;
 use App\Entity\User;
 use App\Repository\ResetPasswordRequestRepository;
+use App\Utils\MDTokenGenerator;
 use Doctrine\ORM\EntityManagerInterface;
 
 class ResetPasswordHelper
@@ -17,16 +18,21 @@ class ResetPasswordHelper
      * @var EntityManagerInterface
      */
     private $manager;
+    /**
+     * @var MDTokenGenerator
+     */
+    private $tokenGenerator;
 
-    public function __construct(EntityManagerInterface $manager)
+    public function __construct(EntityManagerInterface $manager, MDTokenGenerator $tokenGenerator)
     {
         $this->repository = $manager->getRepository(ResetPasswordRequest::class);
         $this->manager = $manager;
+        $this->tokenGenerator = $tokenGenerator;
     }
 
     public function generateToken(): string
     {
-        return md5(random_bytes(20));
+        return $this->tokenGenerator->generate();
     }
 
     public function persistRequest(User $user, string $token): void

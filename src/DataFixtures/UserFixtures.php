@@ -3,6 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\User;
+use App\Utils\MDTokenGenerator;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
@@ -37,11 +38,16 @@ class UserFixtures extends Fixture
      * @var \Faker\Generator
      */
     private $faker;
+    /**
+     * @var MDTokenGenerator
+     */
+    private $tokenGenerator;
 
-    public function __construct(UserPasswordEncoderInterface $userPasswordEncoder)
+    public function __construct(UserPasswordEncoderInterface $userPasswordEncoder, MDTokenGenerator $tokenGenerator)
     {
         $this->faker = Factory::create();
         $this->userPasswordEncoder = $userPasswordEncoder;
+        $this->tokenGenerator = $tokenGenerator;
     }
 
     public function load(ObjectManager $manager)
@@ -71,6 +77,10 @@ class UserFixtures extends Fixture
                 ->setActive($this->faker->boolean)
                 ->setBirthday($this->faker->dateTimeThisCentury)
                 ->setRoles(['ROLE_USER']);
+
+            if (!$user->isActive()) {
+                $user->setConfirmationToken($this->tokenGenerator->generate());
+            }
 
             $this->setReference('user_' . $i, $user);
             $manager->persist($user);

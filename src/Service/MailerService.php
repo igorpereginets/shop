@@ -17,7 +17,7 @@ class MailerService
         $this->mailer = $mailer;
     }
 
-    public function sendConfirmationToken(string $email, string $token)
+    public function sendResetPasswordToken(string $email, string $token)
     {
         $email = (new Email())
             ->from('noreply@shop.com')
@@ -25,6 +25,18 @@ class MailerService
             ->subject('Reset Password')
             ->text('Token: ' . $token)
             ->html('<h1>Token:</h1><span>' . $token . '</span>');
+
+        $this->mailer->send($email);
+    }
+
+    public function sendConfirmationToken(string $email, string $token)
+    {
+        $email = (new Email())
+            ->from('noreply@shop.com')
+            ->to($email)
+            ->subject('Confirm your account')
+            ->text('Confirmation token: ' . $token)
+            ->html('<h1>Confirmation token:</h1><span>' . $token . '</span>');
 
         $this->mailer->send($email);
     }

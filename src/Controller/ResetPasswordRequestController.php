@@ -31,7 +31,7 @@ class ResetPasswordRequestController extends AbstractController
         $this->validator->validate($data);
         $this->handler->handleRequest($data);
 
-        return new Response('', 204);
+        return new Response(null, Response::HTTP_NO_CONTENT);
     }
 
     public function reset(ResetPassword $data)
@@ -39,6 +39,6 @@ class ResetPasswordRequestController extends AbstractController
         $this->validator->validate($data);
         $this->handler->handleReset($data);
 
-        return new Response('', 204);
+        return new Response(null, Response::HTTP_NO_CONTENT);
     }
 }

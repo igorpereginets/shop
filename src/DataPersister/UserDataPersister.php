@@ -4,6 +4,8 @@ namespace App\DataPersister;
 
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use App\Entity\User;
+use App\Service\MailerService;
+use App\Utils\MDTokenGenerator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
@@ -17,11 +19,21 @@ class UserDataPersister implements DataPersisterInterface
      * @var EntityManagerInterface
      */
     private $entityManager;
+    /**
+     * @var MDTokenGenerator
+     */
+    private $tokenGenerator;
+    /**
+     * @var MailerService
+     */
+    private $mailer;
 
-    public function __construct(UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager)
+    public function __construct(UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager, MDTokenGenerator $tokenGenerator, MailerService $mailer)
     {
         $this->passwordEncoder = $passwordEncoder;
         $this->entityManager = $entityManager;
+        $this->tokenGenerator = $tokenGenerator;
+        $this->mailer = $mailer;
     }
 
     public function supports($data): bool
@@ -35,6 +47,13 @@ class UserDataPersister implements DataPersisterInterface
             $data->setPassword(
                 $this->passwordEncoder->encodePassword($data, $data->getPlainPassword())
             );
+        }
+
+        if (!$data->isActive()) {
+            $token = $this->tokenGenerator->generate();
+
+            $data->setConfirmationToken($token);
+            $this->mailer->sendConfirmationToken($data->getEmail(), $token);
         }
 
         $this->entityManager->persist($data);

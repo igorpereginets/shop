@@ -59,7 +59,7 @@ class ResetPasswordRequestHandler
 
         $token = $this->helper->generateToken();
         $this->helper->persistRequest($user, $token);
-        $this->mailer->sendConfirmationToken($passwordRequest->getEmail(), $token);
+        $this->mailer->sendResetPasswordToken($passwordRequest->getEmail(), $token);
     }
 
     public function handleReset(ResetPassword $resetPassword)
