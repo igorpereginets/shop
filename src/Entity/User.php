@@ -9,9 +9,11 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 /**
  * @ApiResource(
@@ -20,6 +22,31 @@ use Symfony\Component\Validator\Constraints as Assert;
  *          "post"={
  *              "denormalization_context"={
  *                  "groups"={"user:post"}
+ *              }
+ *          },
+ *          "add-icon"={
+ *              "security"="object == user or is_granted('ROLE_ADMIN')",
+ *              "method"="post",
+ *              "path"="/users/{id}/icon",
+ *              "denoramlization_context"={"groups"={"user:icon:add"}},
+ *              "controller"="App\Controller\UserIconController::addIcon",
+ *              "deserialize"=false,
+ *              "openapi_context"={
+ *                 "requestBody"={
+ *                     "content"={
+ *                         "multipart/form-data"={
+ *                             "schema"={
+ *                                 "type"="object",
+ *                                 "properties"={
+ *                                     "iconFile"={
+ *                                         "type"="string",
+ *                                         "format"="binary"
+ *                                     }
+ *                                 }
+ *                             }
+ *                         }
+ *                     }
+ *                 }
  *              }
  *          }
  *     },
@@ -34,6 +61,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     },
  * )
  * @ORM\Entity(repositoryClass=UserRepository::class)
+ * @Vich\Uploadable()
  * @UniqueEntity(fields={"username"}, message="There is already a User with such username.")
  * @UniqueEntity(fields={"email"}, message="There is already a User with such email.")
  */
@@ -117,6 +145,19 @@ class User implements UserInterface
      * @Groups({"user:post", "user:put", "user:owner:get"})
      */
     private $birthday;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $icon;
+
+    /**
+     * @Assert\NotNull()
+     * @Assert\Image(mimeTypes={"image/jpeg", "image/png"})
+     * @Groups({"user:icon:add"})
+     * @Vich\UploadableField(mapping="profile_image", fileNameProperty="icon")
+     */
+    private $iconFile;
 
     /**
      * @ORM\Column(type="string", nullable=true)
@@ -292,6 +333,41 @@ class User implements UserInterface
         $this->birthday = $birthday;
 
         return $this;
+    }
+
+    public function getIcon(): ?string
+    {
+        return $this->icon;
+    }
+
+    public function setIcon(?string $icon): self
+    {
+        $this->icon = $icon;
+
+        return $this;
+    }
+
+    public function getIconFile(): ?File
+    {
+        return $this->iconFile;
+    }
+
+    public function setIconFile(?File $iconFile): self
+    {
+        $this->iconFile = $iconFile;
+        if (null !== $iconFile) {
+            $this->updatedAt = new \DateTimeImmutable();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"user:get"})
+     */
+    public function getIconURI()
+    {
+        return $this->icon ? '/images/users/icon/' . $this->icon : null;
     }
 
     public function getConfirmationToken(): ?string
