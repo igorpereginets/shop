@@ -30,13 +30,10 @@ class ResetPasswordHelper
         $this->tokenGenerator = $tokenGenerator;
     }
 
-    public function generateToken(): string
+    public function persistRequest(User $user): string
     {
-        return $this->tokenGenerator->generate();
-    }
+        $token = $this->tokenGenerator->generate();
 
-    public function persistRequest(User $user, string $token): void
-    {
         $newRequest = (new ResetPasswordRequest())
             ->setUser($user)
             ->setToken($token)
@@ -44,6 +41,8 @@ class ResetPasswordHelper
 
         $this->manager->persist($newRequest);
         $this->manager->flush();
+
+        return $token;
     }
 
     public function hasUserHitThrottling(User $user): bool

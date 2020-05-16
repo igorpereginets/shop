@@ -3,7 +3,6 @@
 namespace App\Service;
 
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
 
 class MailerService
 {
@@ -11,33 +10,28 @@ class MailerService
      * @var MailerInterface
      */
     private $mailer;
+    /**
+     * @var EmailProvider
+     */
+    private $provider;
 
-    public function __construct(MailerInterface $mailer)
+    public function __construct(MailerInterface $mailer, EmailProviderInterface $provider)
     {
         $this->mailer = $mailer;
+        $this->provider = $provider;
     }
 
     public function sendResetPasswordToken(string $email, string $token)
     {
-        $email = (new Email())
-            ->from('noreply@shop.com')
-            ->to($email)
-            ->subject('Reset Password')
-            ->text('Token: ' . $token)
-            ->html('<h1>Token:</h1><span>' . $token . '</span>');
+        $resetEmail = $this->provider->getResetPasswordEmail($email, $token);
 
-        $this->mailer->send($email);
+        $this->mailer->send($resetEmail);
     }
 
     public function sendConfirmationToken(string $email, string $token)
     {
-        $email = (new Email())
-            ->from('noreply@shop.com')
-            ->to($email)
-            ->subject('Confirm your account')
-            ->text('Confirmation token: ' . $token)
-            ->html('<h1>Confirmation token:</h1><span>' . $token . '</span>');
+        $confirmationEmail = $this->provider->getConfirmationEmail($email, $token);
 
-        $this->mailer->send($email);
+        $this->mailer->send($confirmationEmail);
     }
 }

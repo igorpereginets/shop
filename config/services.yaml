@@ -4,6 +4,8 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
+    shop.noreply-email: 'noreply@shop.com'
+    shop.bounced-email: 'admin@shop.com'
 
 services:
     # default configuration for services in *this* file
@@ -35,3 +37,10 @@ services:
         arguments: ['@security.token_storage']
         tags:
             - { name: 'serializer.normalizer', priority: 64 }
+
+    App\Service\EmailProvider:
+        arguments: ['%shop.noreply-email%', '%shop.bounced-email%']
+
+    App\Service\LoggedMailer:
+        decorates: 'mailer.mailer'
+        arguments: ['@App\Service\LoggedMailer.inner', '@monolog.logger']

@@ -5,6 +5,7 @@ namespace App\Controller;
 use ApiPlatform\Core\Validator\ValidatorInterface;
 use App\Entity\DTO\ResetPassword;
 use App\Entity\DTO\ResetPasswordRequest;
+use App\Service\ResetPasswordHandler;
 use App\Service\ResetPasswordRequestHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,32 +13,27 @@ use Symfony\Component\HttpFoundation\Response;
 class ResetPasswordRequestController extends AbstractController
 {
     /**
-     * @var ResetPasswordRequestHandler
-     */
-    private $handler;
-    /**
      * @var ValidatorInterface
      */
     private $validator;
 
-    public function __construct(ResetPasswordRequestHandler $handler, ValidatorInterface $validator)
+    public function __construct(ValidatorInterface $validator)
     {
-        $this->handler = $handler;
         $this->validator = $validator;
     }
 
-    public function request(ResetPasswordRequest $data)
+    public function request(ResetPasswordRequest $data, ResetPasswordRequestHandler $handler)
     {
         $this->validator->validate($data);
-        $this->handler->handleRequest($data);
+        $handler->handleRequest($data->getEmail());
 
         return new Response(null, Response::HTTP_NO_CONTENT);
     }
 
-    public function reset(ResetPassword $data)
+    public function reset(ResetPassword $data, ResetPasswordHandler $handler)
     {
         $this->validator->validate($data);
-        $this->handler->handleReset($data);
+        $handler->handleReset($data);
 
         return new Response(null, Response::HTTP_NO_CONTENT);
     }

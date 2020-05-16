@@ -152,7 +152,7 @@ class User implements UserInterface
     private $icon;
 
     /**
-     * @Assert\NotNull()
+     * @Assert\NotNull(groups={"user:icon:add"})
      * @Assert\Image(mimeTypes={"image/jpeg", "image/png"})
      * @Groups({"user:icon:add"})
      * @Vich\UploadableField(mapping="profile_image", fileNameProperty="icon")
