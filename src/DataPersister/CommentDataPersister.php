@@ -4,6 +4,7 @@ namespace App\DataPersister;
 
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use App\Entity\Comment;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
@@ -31,8 +32,14 @@ class CommentDataPersister implements DataPersisterInterface
 
     public function persist($data)
     {
-        if (null === $data->getUser() && $user = $this->tokenStorage->getToken()->getUser()) {
-            $data->setUser($user);
+        $token = $this->tokenStorage->getToken();
+
+        if (null === $data->getUser() && $token !== null) {
+            $user = $token->getUser();
+
+            if ($user instanceof User) {
+                $data->setUser($user);
+            }
         }
 
         $this->entityManager->persist($data);

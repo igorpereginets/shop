@@ -12,53 +12,89 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 class CommentDataPersisterTest extends TestCase
 {
+    public function providerCommentHasNoUser(): array
+    {
+        return [
+            'authenticated_user_creates_comment' => [true, true, new User()],
+            'user_was_not_authenticated' => [false, false, null],
+            'user_authenticated_as_anonymous_user' => [true, false, 'anon']
+        ];
+    }
+
     public function testCommentHasUser()
     {
-        $user = new User();
-        $comment = (new Comment())->setUser($user);
+        $comment = $this->getComment(true, false);
 
         $actualComment = (new CommentDataPersister($this->getTokenStorage(), $this->getEntityManager()))
             ->persist($comment);
 
         $this->assertSame($comment, $actualComment);
-        $this->assertSame($user, $actualComment->getUser());
     }
 
-    public function testCommentHasNoUser()
+    /**
+     * @dataProvider providerCommentHasNoUser
+     */
+    public function testCommentHasNoUser(bool $shouldGetUserMethodBeCalled, bool $shouldSetUserMethodBeCalled, $returnByToken)
     {
-        $user = new User();
-        $comment = new Comment();
-        $token = $this->getToken();
-        $tokenStorage = $this->getTokenStorage();
+        $comment = $this->getComment(false, $shouldSetUserMethodBeCalled);
 
-        $token->expects($this->once())
-            ->method('getUser')
-            ->willReturn($user);
-
-        $tokenStorage->expects($this->once())
-            ->method('getToken')
-            ->willReturn($token);
+        $token = $this->getToken($shouldGetUserMethodBeCalled, $returnByToken);
+        $tokenStorage = $this->getTokenStorage($shouldGetUserMethodBeCalled ? $token : null);
 
         $actualComment = (new CommentDataPersister($tokenStorage, $this->getEntityManager()))->persist($comment);
 
         $this->assertSame($comment, $actualComment);
-        $this->assertSame($user, $actualComment->getUser());
     }
 
     private function getEntityManager()
     {
-        return $this->getMockForAbstractClass(EntityManagerInterface::class);
+        $em = $this->getMockForAbstractClass(EntityManagerInterface::class);
+
+        $em->expects($this->once())
+            ->method('persist')
+            ->withAnyParameters();
+
+        return $em;
     }
 
-    private function getToken()
+    private function getToken(bool $shouldGetUserMethodBeCalled, $return)
     {
-        return $this->getMockBuilder(TokenInterface::class)
+        $token = $this->getMockBuilder(TokenInterface::class)
             ->getMockForAbstractClass();
+
+        $token->expects($shouldGetUserMethodBeCalled ? $this->once() : $this->never())
+            ->method('getUser')
+            ->willReturn($return);
+
+        return $token;
     }
 
-    private function getTokenStorage()
+    private function getTokenStorage($return = null)
     {
-        return $this->getMockBuilder(TokenStorageInterface::class)
+        $tokenStorage = $this->getMockBuilder(TokenStorageInterface::class)
             ->getMockForAbstractClass();
+
+        $tokenStorage->expects($this->once())
+            ->method('getToken')
+            ->willReturn($return);
+
+        return $tokenStorage;
+    }
+
+    private function getComment(bool $hasUser, bool $shouldSetUserMethodBeCalled)
+    {
+        $comment = $this->getMockBuilder(Comment::class)
+            ->setMethods(['setUser', 'getUser'])
+            ->getMock();
+
+        $comment->expects($this->once())
+            ->method('getUser')
+            ->willReturn($hasUser ? new User() : null);
+
+        $comment->expects($shouldSetUserMethodBeCalled ? $this->once() : $this->never())
+            ->method('setUser')
+            ->withAnyParameters();
+
+        return $comment;
     }
 }
