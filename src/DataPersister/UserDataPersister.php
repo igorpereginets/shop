@@ -4,9 +4,6 @@ namespace App\DataPersister;
 
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use App\Entity\User;
-use App\Service\MailerService;
-use App\Utils\MDTokenGenerator;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class UserDataPersister implements DataPersisterInterface
@@ -16,54 +13,34 @@ class UserDataPersister implements DataPersisterInterface
      */
     private $passwordEncoder;
     /**
-     * @var EntityManagerInterface
+     * @var DataPersisterInterface
      */
-    private $entityManager;
-    /**
-     * @var MDTokenGenerator
-     */
-    private $tokenGenerator;
-    /**
-     * @var MailerService
-     */
-    private $mailer;
+    private $decorated;
 
-    public function __construct(UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager, MDTokenGenerator $tokenGenerator, MailerService $mailer)
+    public function __construct(DataPersisterInterface $decorated, UserPasswordEncoderInterface $passwordEncoder)
     {
         $this->passwordEncoder = $passwordEncoder;
-        $this->entityManager = $entityManager;
-        $this->tokenGenerator = $tokenGenerator;
-        $this->mailer = $mailer;
+        $this->decorated = $decorated;
     }
 
     public function supports($data): bool
     {
-        return $data instanceof User;
+        return $this->decorated->supports($data);
     }
 
     public function persist($data)
     {
-        if ($data->getPlainPassword() !== null) {
+        if ($data instanceof User && $data->getPlainPassword() !== null) {
             $data->setPassword(
                 $this->passwordEncoder->encodePassword($data, $data->getPlainPassword())
             );
         }
 
-        if (!$data->isActive()) {
-            $token = $this->tokenGenerator->generate();
-
-            $data->setConfirmationToken($token);
-            $this->mailer->sendConfirmationToken($data->getEmail(), $token);
-        }
-
-        $this->entityManager->persist($data);
-        $this->entityManager->flush();
-
-        return $data;
+        return $this->decorated->persist($data);
     }
 
     public function remove($data)
     {
-        $this->entityManager->remove($data);
+        $this->decorated->remove($data);
     }
 }

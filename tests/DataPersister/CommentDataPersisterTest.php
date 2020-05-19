@@ -12,89 +12,111 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 class CommentDataPersisterTest extends TestCase
 {
-    public function providerCommentHasNoUser(): array
+
+    public function testDoesSupportCommentInstance()
     {
-        return [
-            'authenticated_user_creates_comment' => [true, true, new User()],
-            'user_was_not_authenticated' => [false, false, null],
-            'user_authenticated_as_anonymous_user' => [true, false, 'anon']
-        ];
+        $tokenStorage = $this->createMock(TokenStorageInterface::class);
+        $em = $this->createMock(EntityManagerInterface::class);
+        $comment = $this->createMock(Comment::class);
+
+        $actual = (new CommentDataPersister($tokenStorage, $em))->supports($comment);
+
+        $this->assertTrue($actual);
     }
 
-    public function testCommentHasUser()
+    public function testDoesNotSupportNonCommentInstance()
     {
-        $comment = $this->getComment(true, false);
+        $tokenStorage = $this->createMock(TokenStorageInterface::class);
+        $em = $this->createMock(EntityManagerInterface::class);
 
-        $actualComment = (new CommentDataPersister($this->getTokenStorage(), $this->getEntityManager()))
-            ->persist($comment);
+        $actual = (new CommentDataPersister($tokenStorage, $em))->supports(new class {});
 
-        $this->assertSame($comment, $actualComment);
+        $this->assertFalse($actual);
     }
 
-    /**
-     * @dataProvider providerCommentHasNoUser
-     */
-    public function testCommentHasNoUser(bool $shouldGetUserMethodBeCalled, bool $shouldSetUserMethodBeCalled, $returnByToken)
+    public function testCommentHasAuthor()
     {
-        $comment = $this->getComment(false, $shouldSetUserMethodBeCalled);
+        $tokenStorage = $this->createMock(TokenStorageInterface::class);
+        $em = $this->createMock(EntityManagerInterface::class);
 
-        $token = $this->getToken($shouldGetUserMethodBeCalled, $returnByToken);
-        $tokenStorage = $this->getTokenStorage($shouldGetUserMethodBeCalled ? $token : null);
-
-        $actualComment = (new CommentDataPersister($tokenStorage, $this->getEntityManager()))->persist($comment);
-
-        $this->assertSame($comment, $actualComment);
-    }
-
-    private function getEntityManager()
-    {
-        $em = $this->getMockForAbstractClass(EntityManagerInterface::class);
-
-        $em->expects($this->once())
-            ->method('persist')
-            ->withAnyParameters();
-
-        return $em;
-    }
-
-    private function getToken(bool $shouldGetUserMethodBeCalled, $return)
-    {
-        $token = $this->getMockBuilder(TokenInterface::class)
-            ->getMockForAbstractClass();
-
-        $token->expects($shouldGetUserMethodBeCalled ? $this->once() : $this->never())
-            ->method('getUser')
-            ->willReturn($return);
-
-        return $token;
-    }
-
-    private function getTokenStorage($return = null)
-    {
-        $tokenStorage = $this->getMockBuilder(TokenStorageInterface::class)
-            ->getMockForAbstractClass();
-
-        $tokenStorage->expects($this->once())
-            ->method('getToken')
-            ->willReturn($return);
-
-        return $tokenStorage;
-    }
-
-    private function getComment(bool $hasUser, bool $shouldSetUserMethodBeCalled)
-    {
         $comment = $this->getMockBuilder(Comment::class)
-            ->setMethods(['setUser', 'getUser'])
+            ->setMethods(['getUser', 'setUser'])
             ->getMock();
 
         $comment->expects($this->once())
             ->method('getUser')
-            ->willReturn($hasUser ? new User() : null);
+            ->will($this->returnValue(new User()));
 
-        $comment->expects($shouldSetUserMethodBeCalled ? $this->once() : $this->never())
-            ->method('setUser')
-            ->withAnyParameters();
+        $comment->expects($this->never())
+            ->method('setUser');
 
-        return $comment;
+        (new CommentDataPersister($tokenStorage, $em))->persist($comment);
+    }
+
+    public function testCommentHasNoUserAndIsNotAuthenticated()
+    {
+        $tokenStorage = $this->createMock(TokenStorageInterface::class);
+        $em = $this->createMock(EntityManagerInterface::class);
+
+        $comment = $this->getMockBuilder(Comment::class)
+            ->setMethods(['setUser'])
+            ->getMock();
+
+        $comment->expects($this->never())
+            ->method('setUser');
+
+        (new CommentDataPersister($tokenStorage, $em))->persist($comment);
+    }
+
+    public function testAuthenticatedUserIsNotInstanceOfUserEntity()
+    {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $tokenStorage = $this->getMockBuilder(TokenStorageInterface::class)
+            ->getMockForAbstractClass();
+        $token = $this->getMockBuilder(TokenInterface::class)
+            ->getMockForAbstractClass();
+
+        $token->expects($this->once())
+            ->method('getUser')
+            ->willReturn('NonExisted class');
+
+        $tokenStorage->expects($this->once())
+            ->method('getToken')
+            ->willReturn($token);
+
+        $comment = $this->getMockBuilder(Comment::class)
+            ->setMethods(['setUser'])
+            ->getMock();
+
+        $comment->expects($this->never())
+            ->method('setUser');
+
+        (new CommentDataPersister($tokenStorage, $em))->persist($comment);
+    }
+
+    public function testCommentHasNoUserAndIsAuthenticated()
+    {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $tokenStorage = $this->getMockBuilder(TokenStorageInterface::class)
+            ->getMockForAbstractClass();
+        $token = $this->getMockBuilder(TokenInterface::class)
+            ->getMockForAbstractClass();
+
+        $token->expects($this->once())
+            ->method('getUser')
+            ->willReturn(new User());
+
+        $tokenStorage->expects($this->once())
+            ->method('getToken')
+            ->willReturn($token);
+
+        $comment = $this->getMockBuilder(Comment::class)
+            ->setMethods(['setUser'])
+            ->getMock();
+
+        $comment->expects($this->once())
+            ->method('setUser');
+
+        (new CommentDataPersister($tokenStorage, $em))->persist($comment);
     }
 }

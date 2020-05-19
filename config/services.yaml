@@ -44,3 +44,6 @@ services:
     App\Service\LoggedMailer:
         decorates: 'mailer.mailer'
         arguments: ['@App\Service\LoggedMailer.inner', '@monolog.logger']
+
+    App\DataPersister\UserDataPersister:
+        decorates: 'api_platform.doctrine.orm.data_persister'
