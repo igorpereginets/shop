@@ -5,8 +5,8 @@ namespace App\Serializer;
 use App\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 
 class UserAttributeNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
@@ -47,6 +47,8 @@ class UserAttributeNormalizer implements ContextAwareNormalizerInterface, Normal
 
     private function userIsHimself($object): bool
     {
-        return $object instanceof UserInterface && $this->tokenStorage->getToken()->getUser() === $object;
+        $token = $this->tokenStorage->getToken();
+
+        return $object instanceof UserInterface && $token !== null && $token->getUser() === $object;
     }
 }

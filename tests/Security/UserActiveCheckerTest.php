@@ -13,10 +13,7 @@ class UserActiveCheckerTest extends TestCase
 
     public function testPreAuthNonActiveUser()
     {
-        $user = new User();
-        $user->setActive(false);
-
-        $this->assertFalse($user->isActive());
+        $user = $this->createMock(User::class);
 
         $this->expectException(DisabledException::class);
         (new UserActiveChecker())->checkPreAuth($user);
@@ -24,20 +21,16 @@ class UserActiveCheckerTest extends TestCase
 
     public function testPreAuthActiveUser()
     {
-        $user = new User();
-        $user->setActive(true);
+        $user = $this->createMock(User::class);
 
-        $this->assertTrue($user->isActive());
+        $user->method('isActive')->willReturn(true);
 
         $this->assertNull((new UserActiveChecker())->checkPreAuth($user));
     }
 
     public function testPreAuthIfArgumentIsNotInstanceOfUser()
     {
-        $userMock = $this->getMockBuilder(UserInterface::class)
-            ->getMockForAbstractClass();
-
-        $this->assertFalse($userMock instanceof User);
+        $userMock = $this->getMockBuilder(UserInterface::class)->getMock();
 
         $this->assertNull((new UserActiveChecker())->checkPreAuth($userMock));
     }

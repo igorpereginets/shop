@@ -12,105 +12,104 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 class UserAttributeNormalizerTest extends TestCase
 {
 
-    public function testUserIsAnOwner()
+    public function testIsNotUserInstance()
     {
-        $user = new User();
-        $token = $this->getToken();
-        $tokenStorage = $this->getTokenStorage();
-        $normalizer = $this->getNormalizer();
+        $normalizer = $this->createMock(NormalizerInterface::class);
+        $tokenStorage = $this->createMock(TokenStorageInterface::class);
+        $object = $this->getMockBuilder('NonUserInterfaceInstance')->getMock();
 
-        $token->expects($this->once())
-            ->method('getUser')
-            ->willReturn($user);
-
-        $tokenStorage->expects($this->once())
-            ->method('getToken')
-            ->willReturn($token);
-
-        $normalizer->expects($this->once())
-            ->method('normalize')
-            ->withAnyParameters()
-            ->willReturnArgument(2); //Get context
+        $normalizer->method('normalize')->willReturnArgument(2);
 
         $userAttributeNormalizer = new UserAttributeNormalizer($tokenStorage);
         $userAttributeNormalizer->setNormalizer($normalizer);
 
-        $context = $userAttributeNormalizer->normalize($user, null, ['groups' => ['user:get']]);
+        $context = $userAttributeNormalizer->normalize($object);
 
-        $this->assertCount(2, $context);
+        $this->assertCount(1, $context);
+        $this->assertArrayHasKey(UserAttributeNormalizer::ALREADY_CALLED, $context);
+        $this->assertTrue($context[UserAttributeNormalizer::ALREADY_CALLED]);
+    }
 
-        $this->assertArrayHasKey('groups', $context);
-        $this->assertCount(2, $context['groups']);
-        $this->assertEquals(['user:get', 'user:owner:get'], $context['groups']);
+    public function testUserIsNotAuthorized()
+    {
+        $normalizer = $this->createMock(NormalizerInterface::class);
+        $tokenStorage = $this->createMock(TokenStorageInterface::class);
+        $user = $this->createMock(User::class);
 
+        $normalizer->method('normalize')->willReturnArgument(2);
+
+        $userAttributeNormalizer = new UserAttributeNormalizer($tokenStorage);
+        $userAttributeNormalizer->setNormalizer($normalizer);
+
+        $context = $userAttributeNormalizer->normalize($user);
+
+        $this->assertCount(1, $context);
+        $this->assertArrayHasKey(UserAttributeNormalizer::ALREADY_CALLED, $context);
+        $this->assertTrue($context[UserAttributeNormalizer::ALREADY_CALLED]);
+    }
+
+    public function testAuthorizedUserIsNotInstanceOfUser()
+    {
+        $normalizer = $this->createMock(NormalizerInterface::class);
+        $tokenStorage = $this->createMock(TokenStorageInterface::class);
+        $token = $this->createMock(TokenInterface::class);
+        $user = $this->createMock(User::class);
+
+        $token->method('getUser')->willReturn('NonExistedClass');
+        $tokenStorage->method('getToken')->willReturn($token);
+        $normalizer->method('normalize')->willReturnArgument(2);
+
+        $userAttributeNormalizer = new UserAttributeNormalizer($tokenStorage);
+        $userAttributeNormalizer->setNormalizer($normalizer);
+
+        $context = $userAttributeNormalizer->normalize($user);
+
+        $this->assertCount(1, $context);
         $this->assertArrayHasKey(UserAttributeNormalizer::ALREADY_CALLED, $context);
         $this->assertTrue($context[UserAttributeNormalizer::ALREADY_CALLED]);
     }
 
     public function testUserIsNotAnOwner()
     {
-        $token = $this->getToken();
-        $tokenStorage = $this->getTokenStorage();
-        $normalizer = $this->getNormalizer();
+        $normalizer = $this->createMock(NormalizerInterface::class);
+        $tokenStorage = $this->createMock(TokenStorageInterface::class);
+        $token = $this->createMock(TokenInterface::class);
+        $user = $this->createMock(User::class);
 
-        $token->expects($this->once())
-            ->method('getUser')
-            ->willReturn(new User());
-
-        $tokenStorage->expects($this->once())
-            ->method('getToken')
-            ->willReturn($token);
-
-        $normalizer->expects($this->once())
-            ->method('normalize')
-            ->withAnyParameters()
-            ->willReturnArgument(2); //Get context
+        $token->method('getUser')->willReturn(new User());
+        $tokenStorage->method('getToken')->willReturn($token);
+        $normalizer->method('normalize')->willReturnArgument(2);
 
         $userAttributeNormalizer = new UserAttributeNormalizer($tokenStorage);
         $userAttributeNormalizer->setNormalizer($normalizer);
 
-        $context = $userAttributeNormalizer->normalize(new User());
+        $context = $userAttributeNormalizer->normalize($user);
 
         $this->assertCount(1, $context);
-
         $this->assertArrayHasKey(UserAttributeNormalizer::ALREADY_CALLED, $context);
         $this->assertTrue($context[UserAttributeNormalizer::ALREADY_CALLED]);
     }
 
-    public function testIsNotUserInstance()
+    public function testUserIsAnOwner()
     {
-        $normalizer = $this->getNormalizer();
+        $normalizer = $this->createMock(NormalizerInterface::class);
+        $tokenStorage = $this->createMock(TokenStorageInterface::class);
+        $token = $this->createMock(TokenInterface::class);
+        $user = $this->createMock(User::class);
 
-        $normalizer->expects($this->once())
-            ->method('normalize')
-            ->withAnyParameters()
-            ->willReturnArgument(2); //Get context
+        $token->method('getUser')->willReturn($user);
+        $tokenStorage->method('getToken')->willReturn($token);
+        $normalizer->method('normalize')->willReturnArgument(2);
 
-        $userAttributeNormalizer = new UserAttributeNormalizer($this->getTokenStorage());
+        $userAttributeNormalizer = new UserAttributeNormalizer($tokenStorage);
         $userAttributeNormalizer->setNormalizer($normalizer);
 
-        $context = $userAttributeNormalizer->normalize([]); // Not a user
+        $context = $userAttributeNormalizer->normalize($user);
 
-        $this->assertCount(1, $context);
-
+        $this->assertCount(2, $context);
+        $this->assertArrayHasKey('groups', $context);
+        $this->assertContains('user:owner:get', $context['groups']);
         $this->assertArrayHasKey(UserAttributeNormalizer::ALREADY_CALLED, $context);
         $this->assertTrue($context[UserAttributeNormalizer::ALREADY_CALLED]);
-    }
-
-    private function getToken()
-    {
-        return $this->getMockBuilder(TokenInterface::class)
-            ->getMockForAbstractClass();
-    }
-
-    private function getTokenStorage()
-    {
-        return $this->getMockBuilder(TokenStorageInterface::class)
-            ->getMockForAbstractClass();
-    }
-
-    private function getNormalizer()
-    {
-        return $this->getMockForAbstractClass(NormalizerInterface::class);
     }
 }

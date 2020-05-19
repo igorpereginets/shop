@@ -15,48 +15,33 @@ class ConfirmationServiceTest extends TestCase
     public function testSuccessfulConfirmUser()
     {
         $confirmationToken = 'fakeConfirmationToken';
-        $user = (new User())->setActive(false)->setConfirmationToken($confirmationToken);
+        $userRepository = $this->createMock(UserRepository::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $user = $this->createMock(User::class);
 
-        $userRepository = $this->getUserRepository();
-        $entityManager = $this->getEntityManager();
-
-        $userRepository->expects($this->once())
-            ->method('findOneBy')
+        $userRepository->method('findOneBy')
             ->with(['confirmationToken' => $confirmationToken])
             ->willReturn($user);
 
-        (new ConfirmationService($userRepository, $entityManager))->confirmUser($confirmationToken);
+        $user->expects($this->once())
+            ->method('setActive')
+            ->with(true);
 
-        $this->assertTrue($user->isActive());
-        $this->assertNull($user->getConfirmationToken());
+        $user->expects($this->once())
+            ->method('setConfirmationToken')
+            ->with(null);
+
+        (new ConfirmationService($userRepository, $entityManager))->confirmUser($confirmationToken);
     }
 
     public function testNotFoundUser()
     {
         $confirmationToken = 'fakeConfirmationToken';
-
-        $userRepository = $this->getUserRepository();
-
-        $userRepository->expects($this->once())
-            ->method('findOneBy')
-            ->with(['confirmationToken' => $confirmationToken])
-            ->willReturn(null);
+        $userRepository = $this->createMock(UserRepository::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
 
         $this->expectException(EntityNotFoundException::class);
-        (new ConfirmationService($userRepository, $this->getEntityManager()))
+        (new ConfirmationService($userRepository, $entityManager))
             ->confirmUser($confirmationToken);
-    }
-
-    private function getUserRepository()
-    {
-        return $this->getMockBuilder(UserRepository::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-    }
-
-    private function getEntityManager()
-    {
-        return $this->getMockBuilder(EntityManagerInterface::class)
-            ->getMockForAbstractClass();
     }
 }
