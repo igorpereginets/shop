@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Service\MailerService;
 use App\Utils\MDTokenGenerator;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 
 class UserRegisterSubscriber implements EventSubscriberInterface
@@ -27,7 +28,10 @@ class UserRegisterSubscriber implements EventSubscriberInterface
         $this->mailer = $mailer;
     }
 
-    public function onKernelView(ViewEvent $event)
+    /**
+     * @param ViewEvent|RequestEvent $event
+     */
+    public function onKernelView(RequestEvent $event)
     {
         $entity = $event->getControllerResult();
 
